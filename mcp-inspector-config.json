@@ -1,0 +1,24 @@
+{
+  "//": "made by namar0x0309 with ❤️ at GoAIX",
+  "mcpServers": {
+    "wekan-username": {
+      "command": "node",
+      "args": ["dist/server.js"],
+      "env": {
+        "WEKAN_BASE_URL": "https://wekan.namar0x0309.com",
+        "WEKAN_USERNAME": "username",
+        "WEKAN_PASSWORD": "password!"
+      },
+      "transport": "stdio"
+    },
+    "wekan": {
+      "command": "node",
+      "args": ["dist/server.js"],
+      "env": {
+        "WEKAN_BASE_URL": "https://wekan.namar0x0309.com",
+        "WEKAN_API_TOKEN": "thetokenyougetfrom_get-wekan-token_script"
+      },
+      "transport": "stdio"
+    }
+  }
+}
