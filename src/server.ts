@@ -9,6 +9,7 @@ const BASE_URL = process.env["WEKAN_BASE_URL"]?.replace(/\/$/, "") || "";
 const TOKEN = process.env["WEKAN_API_TOKEN"] || "";
 const USERNAME = process.env["WEKAN_USERNAME"] || "";
 const PASSWORD = process.env["WEKAN_PASSWORD"] || "";
+const USER_ID = process.env["WEKAN_USER_ID"] || "";
 
 if (!BASE_URL || (!TOKEN && !(USERNAME && PASSWORD))) {
   // Fail fast so agent surfaces a clear error.
@@ -19,7 +20,8 @@ const wekan = new Wekan({
   baseUrl: BASE_URL, 
   token: TOKEN,
   username: USERNAME,
-  password: PASSWORD
+  password: PASSWORD,
+  userId: USER_ID
 });
 
 const server = new McpServer(
@@ -29,8 +31,7 @@ const server = new McpServer(
 
 // Register tools
 server.tool("listBoards", "List accessible Wekan boards", {}, async () => {
-  const boards = await wekan.listBoards();
-  // Return trimmed, agent-friendly fields
+  const boards = await wekan.listBoards(USER_ID);
   return { content: [{ type: "text", text: JSON.stringify(boards.map((b) => ({ id: b._id, title: b.title })))}] };
 });
 
@@ -64,15 +65,18 @@ server.tool("createCard", "Create a card", {
   listId: z.string(),
   title: z.string(),
   description: z.string().optional(),
-  swimlaneId: z.string().optional(),
+  swimlaneId: z.string(),
   due: z.string().datetime().optional(),
   members: z.array(z.string()).optional(),
   labels: z.array(z.string()).optional()
 }, async (args) => {
   const { boardId, listId, title, description, swimlaneId, due, members, labels } = args;
-  const body: any = { title };
-  if (description) body.description = description;
-  if (swimlaneId) body.swimlaneId = swimlaneId;
+  const body: any = {
+    authorId: USER_ID,
+    title,
+    description: description || "",
+    swimlaneId
+  };
   if (due) body.dueAt = due;
   if (members) body.members = members;
   if (labels) body.labelIds = labels;
@@ -82,25 +86,26 @@ server.tool("createCard", "Create a card", {
 
 server.tool("moveCard", "Move a card to another list or swimlane", {
   boardId: z.string(),
+  fromListId: z.string(),
   cardId: z.string(),
   listId: z.string().optional(),
   swimlaneId: z.string().optional()
 }, async (args) => {
-  const { boardId, cardId, listId, swimlaneId } = args;
+  const { boardId, fromListId, cardId, listId, swimlaneId } = args;
   const payload: any = {};
   if (listId) payload.listId = listId;
   if (swimlaneId) payload.swimlaneId = swimlaneId;
-  const card = await wekan.moveCard(boardId, cardId, payload);
+  const card = await wekan.moveCard(boardId, fromListId, cardId, payload);
   return { content: [{ type: "text", text: JSON.stringify({ id: card._id, listId: card.listId, swimlaneId: card.swimlaneId }) }] };
 });
 
 server.tool("commentCard", "Add a comment to a card", {
   boardId: z.string(),
   cardId: z.string(),
-  text: z.string().min(1)
+  comment: z.string().min(1)
 }, async (args) => {
-  const { boardId, cardId, text } = args;
-  const res = await wekan.commentCard(boardId, cardId, text);
+  const { boardId, cardId, comment } = args;
+  const res = await wekan.commentCard(boardId, cardId, USER_ID, comment);
   return { content: [{ type: "text", text: JSON.stringify({ ok: true, commentId: res._id }) }] };
 });
 
