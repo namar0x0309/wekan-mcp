@@ -12,6 +12,7 @@ export type WekanClientOpts = {
   token?: string;
   username?: string;
   password?: string;
+  userId?: string;
 };
 
 // Wekan API response types
@@ -121,11 +122,11 @@ export class Wekan {
   }
 
   // API surface
-  listBoards(): Promise<WekanBoard[]> { return this.get(`/api/boards`); }
+  listBoards(userId: string): Promise<WekanBoard[]> { return this.get(`/api/users/${userId}/boards`); }
   listLists(boardId: string): Promise<WekanList[]> { return this.get(`/api/boards/${boardId}/lists`); }
   listSwimlanes(boardId: string): Promise<WekanSwimlane[]> { return this.get(`/api/boards/${boardId}/swimlanes`); }
   listCards(boardId: string, listId: string): Promise<WekanCard[]> { return this.get(`/api/boards/${boardId}/lists/${listId}/cards`); }
   createCard(boardId: string, listId: string, body: any): Promise<WekanCard> { return this.post(`/api/boards/${boardId}/lists/${listId}/cards`, body); }
-  moveCard(boardId: string, cardId: string, body: any): Promise<WekanCard> { return this.put(`/api/boards/${boardId}/cards/${cardId}`, body); }
-  commentCard(boardId: string, cardId: string, text: string): Promise<WekanComment> { return this.post(`/api/boards/${boardId}/cards/${cardId}/comments`, { text }); }
+  moveCard(boardId: string, fromListId: string, cardId: string, body: any): Promise<WekanCard> { return this.put(`/api/boards/${boardId}/lists/${fromListId}/cards/${cardId}`, body); }
+  commentCard(boardId: string, cardId: string, authorId: string, comment: string): Promise<WekanComment> { return this.post(`/api/boards/${boardId}/cards/${cardId}/comments`, { authorId, comment }); }
 }
