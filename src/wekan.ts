@@ -122,8 +122,12 @@ export class Wekan {
 
   // API surface
   listBoards(): Promise<WekanBoard[]> { return this.get(`/api/boards`); }
-  listLists(boardId: string): Promise<WekanList[]> { return this.get(`/api/boards/${boardId}/lists`); }
+  createBoard(body: { title: string, owner: string }): Promise<WekanBoard> { return this.post(`/api/boards`, body); }
+  listLists(boardId: string): Promise<WekanList[]> { return this.get(`/api/boards/${boardId}/lists`); }  
+  createList(boardId: string, body: { title: string }): Promise<WekanList> { return this.post(`/api/boards/${boardId}/lists`, body); }
   listSwimlanes(boardId: string): Promise<WekanSwimlane[]> { return this.get(`/api/boards/${boardId}/swimlanes`); }
+  createSwimlane(boardId: string, body: { title: string }): Promise<WekanSwimlane> { return this.post(`/api/boards/${boardId}/swimlanes`, body); }
+  updateSwimlane(boardId: string, swimlaneId: string, body: { title: string }): Promise<WekanSwimlane> { return this.put(`/api/boards/${boardId}/swimlanes/${swimlaneId}`, body); }
   listCards(boardId: string, listId: string): Promise<WekanCard[]> { return this.get(`/api/boards/${boardId}/lists/${listId}/cards`); }
   createCard(boardId: string, listId: string, body: any): Promise<WekanCard> { return this.post(`/api/boards/${boardId}/lists/${listId}/cards`, body); }
   moveCard(boardId: string, cardId: string, body: any): Promise<WekanCard> { return this.put(`/api/boards/${boardId}/cards/${cardId}`, body); }
